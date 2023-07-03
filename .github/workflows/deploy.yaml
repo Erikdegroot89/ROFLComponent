@@ -1,0 +1,46 @@
+name: Deploy
+on:
+  push:
+    branches: 
+      - rc
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Tag version and deploy
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        registry-url: https://npm.pkg.github.com
+    - name: authenticate
+      run: echo "//npm.pkg.github.com/:_authToken=${{ env.GITHUB_TOKEN }}" >> .npmrc
+    - name: install
+      run: npm ci
+    - name: build
+      run: npm run build --production
+    - name: prune
+      run: npm prune --production
+    - name: Semantic Release
+      uses: cycjimmy/semantic-release-action@v3
+      with:
+        semantic_version: 21.0.6
+      env:
+        GH_TOKEN: ${{ SECRETS.personal_access_token }}
+        NPM_TOKEN: ${{ github.token }}
+
+  sync:
+    needs: deploy
+    name: Sync master into rc
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+    - uses: actions/checkout@v3
+    - uses: everlytic/branch-merge@1.1.5
+      with:
+        github_token: ${{ SECRETS.personal_access_token }}
+        source_ref: 'refs/heads/master'
+        target_branch: 'rc'
+        commit_message_template: 'ci: Sync master into rc'

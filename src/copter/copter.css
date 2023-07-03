@@ -1,0 +1,29 @@
+.roflcopter {
+    width: 200px;
+}
+
+.crashing {
+  transform: translateY(100vh) rotate(180deg);
+  transition: transform 3s ease-in;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.roflcopter::after {
+    text-align: center;
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    width:100%;
+    display:block;
+}
+
+.roflcopter:not(.crashing)::after {
+  content: "⚠️DON'T CLICK ⚠️";
+  
+}
+
+.roflcopter.crashing::after{
+    content: "OH N0ES!";
+    transform: rotate(-180deg);
+    transition: transform 3s ease-in;
+}
+
+
